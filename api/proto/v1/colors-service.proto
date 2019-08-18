@@ -20,7 +20,7 @@ message CreateRequest {
 // Quan es crea un color retornem el seu nou id
 message CreateResponse {
     string api = 1;
-    string id = 2;
+    int64 id = 2;
 }
 
 message ReadRequest {
@@ -43,10 +43,6 @@ message UpdateResponse {
     int64 updated = 2;
 }
 
-service ColorService {
-    rpc Create (CreateRequest) returns (CreateResponse);
-}
-
 message DeleteRequest{
     string api = 1;
     int64 id = 2;
@@ -67,7 +63,7 @@ message ReadAllResponse{
     repeated Color colors = 2;
 }
 
-service ToDoService {
+service ColorService {
     // Create new todo task
     rpc Create(CreateRequest) returns (CreateResponse);
 
