@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Color {
+    int64 id = 1;
+    string nom = 2;
+    string rgb = 3;
+    google.protobuf.Timestamp creacio = 4;
+}
+
+// Al crear un color s'han de passar les dades
+message CreateRequest {
+    string api = 1;
+    Color color = 2;
+}
+
+// Quan es crea un color retornem el seu nou id
+message CreateResponse {
+    string api = 1;
+    string id = 2;
+}
+
+message ReadRequest {
+    string api = 1;
+    int64 id = 2;
+}
+
+message ReadResponse {
+    string api = 1;
+    Color color = 2;
+}
+
+message UpdateRequest {
+    string api = 1;
+    Color color = 2;
+}
+
+message UpdateResponse {
+    string api = 1;
+    int64 updated = 2;
+}
+
+service ColorService {
+    rpc Create (CreateRequest) returns (CreateResponse);
+}
+
+message DeleteRequest{
+    string api = 1;
+    int64 id = 2;
+}
+
+message DeleteResponse{
+    string api = 1;
+    int64 deleted = 2;
+}
+
+message ReadAllRequest{
+    string api = 1;
+}
+
+// Contains list of all todo tasks
+message ReadAllResponse{
+    string api = 1;
+    repeated Color colors = 2;
+}
+
+service ToDoService {
+    // Create new todo task
+    rpc Create(CreateRequest) returns (CreateResponse);
+
+    // Read todo task
+    rpc Read(ReadRequest) returns (ReadResponse);
+
+    // Update todo task
+    rpc Update(UpdateRequest) returns (UpdateResponse);
+
+    // Delete todo task
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+
+    // Read all todo tasks
+    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
+}
