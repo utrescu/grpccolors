@@ -42,9 +42,9 @@ func main() {
 	}
 	res1, err := c.Create(ctx, &req1)
 	if err != nil {
-		log.Fatalf("Create failed: %v", err)
+		log.Fatalf("Ha fallat la creació: %v", err)
 	}
-	log.Printf("Create result: <%+v>\n\n", res1)
+	log.Printf("Create: <%+v>\n\n", res1)
 
 	id := res1.Id
 
@@ -57,7 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ha fallat la lectura: %v", err)
 	}
-	log.Printf("Resultat: <%+v>\n\n", res2)
+	log.Printf("Read: <%+v>\n\n", res2)
 
 	// Call ReadAll
 	req4 := v1.ReadAllRequest{
@@ -67,6 +67,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ha fallat la recuperació de tots: %v", err)
 	}
-	log.Printf("Tots els colors: <%+v>\n\n", res4)
+	log.Printf("ReadAll: <%+v>\n\n", res4)
 
 }
