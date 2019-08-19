@@ -15,58 +15,77 @@ const (
 	apiVersion = "v1"
 )
 
+type colorsACrear struct {
+	Nom string
+	Rgb string
+}
+
 func main() {
+
+	// Colors que crearé
+	crearColors := []colorsACrear{
+		colorsACrear{
+			Nom: "vermell",
+			Rgb: "FF0000",
+		},
+		colorsACrear{
+			Nom: "blau",
+			Rgb: "00FF00",
+		},
+	}
+
 	// get configuration
 	address := flag.String("servidor", "", "servidor gRPC = host:port")
 	flag.Parse()
 
-	// Set up a connection to the server.
 	conn, err := grpc.Dial(*address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No s'ha pogut connectar: %v", err)
 	}
 	defer conn.Close()
 
+	// Crear el client
 	c := v1.NewColorServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Prova la creació d'un color amb "Create"
-	req1 := v1.CreateRequest{
-		Api: apiVersion,
-		Color: &v1.Color{
-			Nom: "Vermell",
-			Rgb: "FF0000",
-		},
+	// Creació dels colors
+	for _, dadesColor := range crearColors {
+		req1 := v1.CreateRequest{
+			Api: apiVersion,
+			Color: &v1.Color{
+				Nom: dadesColor.Nom,
+				Rgb: dadesColor.Rgb,
+			},
+		}
+		res1, err := c.Create(ctx, &req1)
+		if err != nil {
+			log.Fatalf("Ha fallat la creació: %v", err)
+		}
+		log.Printf("Create: Id=%d\n\n", res1.Id)
 	}
-	res1, err := c.Create(ctx, &req1)
-	if err != nil {
-		log.Fatalf("Ha fallat la creació: %v", err)
-	}
-	log.Printf("Create: <%+v>\n\n", res1)
 
-	id := res1.Id
-
-	// Read
-	req2 := v1.ReadRequest{
+	// Recuperar el que té Id 1
+	var id int64 = 1
+	reqblau := v1.ReadRequest{
 		Api: apiVersion,
 		Id:  id,
 	}
-	res2, err := c.Read(ctx, &req2)
+	res2, err := c.Read(ctx, &reqblau)
 	if err != nil {
 		log.Fatalf("Ha fallat la lectura: %v", err)
 	}
-	log.Printf("Read: <%+v>\n\n", res2)
+	log.Printf("Read: %d, %s, %s\n\n", res2.Color.Id, res2.Color.Nom, res2.Color.Rgb)
 
-	// Call ReadAll
-	req4 := v1.ReadAllRequest{
+	// Veure'ls tots
+	req3 := v1.ReadAllRequest{
 		Api: apiVersion,
 	}
-	res4, err := c.ReadAll(ctx, &req4)
+	res3, err := c.ReadAll(ctx, &req3)
 	if err != nil {
 		log.Fatalf("Ha fallat la recuperació de tots: %v", err)
 	}
-	log.Printf("ReadAll: <%+v>\n\n", res4)
+	log.Printf("ReadAll: %+v\n\n", res3.Colors)
 
 }

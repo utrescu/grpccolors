@@ -118,14 +118,14 @@ func (s *colorServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) 
 }
 
 func (s *colorServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest) (*v1.ReadAllResponse, error) {
-	list := []*v1.Color{}
+	llista := []*v1.Color{}
 
-	for _, color := range s.llistaColors {
-		list = append(list, &color)
+	for index := range s.llistaColors {
+		llista = append(llista, &s.llistaColors[index])
 	}
 
 	return &v1.ReadAllResponse{
 		Api:    apiVersion,
-		Colors: list,
+		Colors: llista,
 	}, nil
 }
