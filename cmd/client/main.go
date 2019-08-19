@@ -22,7 +22,7 @@ type colorsACrear struct {
 
 func main() {
 
-	// Colors que crearé
+	// Colors que crearà en el servidor
 	crearColors := []colorsACrear{
 		colorsACrear{
 			Nom: "vermell",
@@ -31,6 +31,18 @@ func main() {
 		colorsACrear{
 			Nom: "blau",
 			Rgb: "00FF00",
+		},
+		colorsACrear{
+			Nom: "verd",
+			Rgb: "0000FF",
+		},
+		colorsACrear{
+			Nom: "blanc",
+			Rgb: "FFFFFF",
+		},
+		colorsACrear{
+			Nom: "negre",
+			Rgb: "000000",
 		},
 	}
 
@@ -86,6 +98,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ha fallat la recuperació de tots: %v", err)
 	}
-	log.Printf("ReadAll: %+v\n\n", res3.Colors)
+
+	log.Print("----- COLORS ----\n")
+	for _, color := range res3.Colors {
+		log.Printf("Color: %d %s : %s", color.Id, color.Nom, color.Rgb)
+	}
 
 }
