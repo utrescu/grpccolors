@@ -105,3 +105,69 @@ A `pkg/protocol/grpc/server.go` es defineix el codi que servirà per iniciar i a
 ### Configuració del servidor per línia de comandes
 
 El `server.go` de `pkg/cmd/server/server.go` és per poder passar paràmetres al servidor des de la linia de comandes (es podria fer servir per obtenir un sistema d'emmagatzematge de dades, etc... )
+
+## Afegir un endpoint REST
+
+gRPC es pot fer servir conjuntament amb REST. Per això s'ha creat el grpc-gateway que filtra les peticions i les pot convertir en HTTP.
+
+Per fer-ho cal fer algunes modificacions en el codi i instal·lar paquets nous:
+
+```bash
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+go get -u github.com/golang/protobuf/protoc-gen-go
+```
+
+Al treballar amb mòduls he de copiar el contingut de _%GOPATH%/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google_ a la carpeta _third_party/google_.
+
+Si es vol treballar amb Swagger (encara no ho he fet també caldria afegir el contingut de _%GOPATH%/src/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options_ a _third_party\protoc-gen-swagger/options_ (però aquí no està fet perquè també caldria definir Swagger en la definició de l'arxiu **proto** i no vull complicar-ho més)
+
+Després en la definició del protocol s'hi ha d'importar les anotacions i la opció `google.api.http` per cada una de les peticions accessibles per REST:
+
+```protobuffer3
+syntax = "proto3";
+
+package v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+```
+
+i en els mètodes:
+
+```protobuffer
+service ColorService {
+    // Create new todo task
+    rpc Create(CreateRequest) returns (CreateResponse) {
+        option(google.api.http) = {
+            post: "/v1/colors"
+            body: "*"
+        };
+    };
+    etc...
+```
+
+També s'ha de canviar la generació de codi del fitxers `protoc-gen.sh` i `protoc-gen.cmd` perquè a més generin les dades REST
+
+```bash
+protoc --proto_path=api/proto/v1 --proto_path=third_party --go_out=plugins=grpc:pkg/api/v1 colors-service.proto
+protoc --proto_path=api/proto/v1 --proto_path=third_party --grpc-gateway_out=logtostderr=true:pkg/api/v1 colors-service.proto
+protoc --proto_path=api/proto/v1 --proto_path=third_party --swagger_out=logtostderr=true:api/swagger/v1 colors-service.proto
+```
+
+Ara en comptes de crear un sol stub en crearà dos:
+
+```text
+colors-service.pb.go
+colors-service.pb.gw.go
+```
+
+Es defineix com s'ha d'iniciar el gateway HTTP d'una forma similar a com ho feia el servidor gRPC: `pkg/protocol/rest/server.go`
+
+I se li ha de dir al procés d'iniciar el servei que l'engegui: `pkg/cmd/server.go`
+
+Ara després de compilar el servidor iniciarà els dos serveis, el gRPC i el REST:
+
+![REST](README/rest.png)
+
+![REST get](README/rest2.png)
