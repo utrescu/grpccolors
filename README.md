@@ -27,7 +27,7 @@ Si tot ha anat bé sortirà un missatge com aquest:
 
 ## Executar el client
 
-Per ara el client és una mica rudimentari i només crea el color vermell, el recupera i recupera tots els colors del servidor (que és el color vermell) ...
+Per ara el client és una mica rudimentari i només crea el color vermell i el blau, recupera el que tingui Id=1, i recupera tots els colors del servidor (que si s'executa diverses vegades poden estar repetits) ...
 
 ```bash
 cd cmd/client
