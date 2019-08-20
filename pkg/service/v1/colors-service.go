@@ -163,7 +163,7 @@ func (s *colorServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) 
 		return nil, err
 	}
 
-	var deleted int64 = 0
+	var deleted int64
 
 	posicio, err := s.locateColor(req.Id)
 	if err == nil {

@@ -16,23 +16,112 @@ go build .
 El servidor s'executa especificant quin port volem fer servir:
 
 ```bash
-./server -grpc-port=9090
+./server -grpc-port=9090 -http-port=8080
 ```
 
 Si tot ha anat bé sortirà un missatge com aquest:
 
 ```text
-2019/08/18 18:12:25 Iniciat el servidor gRPC ...
+2019/08/20 15:29:51 iniciant el gateway HTTP...
+2019/08/20 15:29:51 Iniciat el servidor gRPC ...
 ```
+
+Ara s'hauria de poder accedir al servei via gRPC i a través de connexió HTTP (ex. http://localhost:8080/v1/colors)
+
+| Verb   | URL path        | Efecte                                 |
+| ------ | --------------- | -------------------------------------- |
+| GET    | /v1/colors      | Recupera tots els colors               |
+| GET    | /v1/colors/{id} | Recupera el color amb l'id especificat |
+| POST   | /v1/colors      | Crea un color nou                      |
+| PUT    | /v1/colors/{id} | Modifica el color amb l'id especificat |
+| DELETE | /v1/colors/{id} | Esborra el color amb l'id especificat  |
+
+Exemples amb HTTPIE:
+
+```bash
+$ http GET http://localhost:8080/v1/colors/3
+HTTP/1.1 200 OK
+Content-Length: 102
+Content-Type: application/json
+Date: Tue, 20 Aug 2019 13:38:06 GMT
+Grpc-Metadata-Content-Type: application/grpc
+
+{
+    "api": "v1",
+    "color": {
+        "creacio": "2019-08-20T13:32:32.292490057Z",
+        "id": "3",
+        "nom": "verd",
+        "rgb": "0000FF"
+    }
+}
+
+$ http DELETE http://localhost:8080/v1/colors/3
+HTTP/1.1 200 OK
+Content-Length: 26
+Content-Type: application/json
+Date: Tue, 20 Aug 2019 13:38:25 GMT
+Grpc-Metadata-Content-Type: application/grpc
+
+{
+    "api": "v1",
+    "deleted": "1"
+}
+
+$ http PUT http://localhost:8080/v1/colors/1 api="v1" color:='{"nom":"rosa", "rgb":"ff0080"}'
+HTTP/1.1 200 OK
+Content-Length: 26
+Content-Type: application/json
+Date: Tue, 20 Aug 2019 14:32:03 GMT
+Grpc-Metadata-Content-Type: application/grpc
+
+{
+    "api": "v1",
+    "updated": "1"
+}
+
+$ http GET http://localhost:8080/v1/colors/1
+HTTP/1.1 200 OK
+Content-Length: 102
+Content-Type: application/json
+Date: Tue, 20 Aug 2019 14:32:07 GMT
+Grpc-Metadata-Content-Type: application/grpc
+
+{
+    "api": "v1",
+    "color": {
+        "creacio": "2019-08-20T14:27:02.570703861Z",
+        "id": "1",
+        "nom": "rosa",
+        "rgb": "ff0080"
+    }
+}
+
+$ http POST http://localhost:8080/v1/colors api="v1" color:='{"nom":"groc", "rgb":"FFFF00"}'
+HTTP/1.1 200 OK
+Content-Length: 21
+Content-Type: application/json
+Date: Tue, 20 Aug 2019 14:35:52 GMT
+Grpc-Metadata-Content-Type: application/grpc
+
+{
+    "api": "v1",
+    "id": "7"
+}
+```
+
+He vist que en les versions GET no cal especificar la versió de API, però a l'hora de fer canvis si. No sé si és algun problema amb la meva implementació
 
 ## Executar el client
 
-Per ara el client és una mica rudimentari i només crea el color vermell i el blau, recupera el que tingui Id=1, i recupera tots els colors del servidor (que si s'executa diverses vegades poden estar repetits) ...
+Per ara el client és una mica rudimentari i només funciona amb gRPC. Només crea el color vermell i el blau, recupera el que tingui Id=2, i recupera tots els colors del servidor ...
 
 ```bash
 cd cmd/client
 ./client -servidor="localhost:9090"
 ```
+
+Ara comprova que els colors no siguin repetits o sigui que només es pot executar una vegada :-(
 
 El resultat serà:
 
