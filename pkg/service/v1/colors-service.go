@@ -31,6 +31,21 @@ func NewColorServiceServer() v1.ColorServiceServer {
 	}
 }
 
+// NewColorServiceServerWithValues inicialitzat amb valors
+func NewColorServiceServerWithValues(colors []v1.Color) v1.ColorServiceServer {
+	var max int64
+	for _, c := range colors {
+		if c.Id > max {
+			max = c.Id
+		}
+	}
+
+	return &colorServiceServer{
+		lastID:       max,
+		llistaColors: colors,
+	}
+}
+
 func (s *colorServiceServer) incrementID() int64 {
 	s.lastID = s.lastID + 1
 	return s.lastID
@@ -47,9 +62,35 @@ func (s *colorServiceServer) checkAPI(api string) error {
 	return nil
 }
 
+func (s *colorServiceServer) checkRGB(rgb string) error {
+
+	for _, element := range s.llistaColors {
+		if element.Rgb == rgb {
+			return status.Errorf(codes.AlreadyExists,
+				"el color RGB `%s` ja està entre les dades:'%s'", rgb, element.Nom)
+		}
+	}
+	return nil
+}
+
+func (s *colorServiceServer) locateColor(id int64) (int, error) {
+
+	for index, element := range s.llistaColors {
+		if element.Id == id {
+			return index, nil
+		}
+	}
+	return -1, errors.New("Not found")
+}
+
 func (s *colorServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (*v1.CreateResponse, error) {
 	// check if the API version requested by client is supported by server
 	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
+	// Check if rgb already exists
+	if err := s.checkRGB(req.Color.Rgb); err != nil {
 		return nil, err
 	}
 
@@ -77,29 +118,37 @@ func (s *colorServiceServer) Create(ctx context.Context, req *v1.CreateRequest) 
 // Read color
 func (s *colorServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.ReadResponse, error) {
 
-	var color v1.Color
-	found := false
-
-	for _, element := range s.llistaColors {
-		if element.Id == req.Id {
-			color = element
-			found = true
-			break
-		}
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
 	}
 
-	if found == false {
+	posicio, err := s.locateColor(req.Id)
+	if err != nil {
 		return nil, errors.New("Color no trobat")
 	}
+
 	return &v1.ReadResponse{
 		Api:   apiVersion,
-		Color: &color,
+		Color: &s.llistaColors[posicio],
 	}, nil
 }
 
 func (s *colorServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (*v1.UpdateResponse, error) {
 
-	var updated int64 = 1
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
+	var updated int64
+
+	posicio, err := s.locateColor(req.Color.Id)
+	if err == nil {
+		s.llistaColors[posicio].Nom = req.Color.Nom
+		s.llistaColors[posicio].Rgb = req.Color.Rgb
+		updated = 1
+	}
 
 	return &v1.UpdateResponse{
 		Api:     apiVersion,
@@ -109,7 +158,18 @@ func (s *colorServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) 
 
 func (s *colorServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) (*v1.DeleteResponse, error) {
 
-	var deleted int64 = 1
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
+	var deleted int64 = 0
+
+	posicio, err := s.locateColor(req.Id)
+	if err == nil {
+		s.llistaColors = append(s.llistaColors[:posicio], s.llistaColors[posicio+1:]...)
+		deleted = 1
+	}
 
 	return &v1.DeleteResponse{
 		Api:     apiVersion,
@@ -118,6 +178,11 @@ func (s *colorServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) 
 }
 
 func (s *colorServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest) (*v1.ReadAllResponse, error) {
+	// check if the API version requested by client is supported by server
+	if err := s.checkAPI(req.Api); err != nil {
+		return nil, err
+	}
+
 	llista := []*v1.Color{}
 
 	for index := range s.llistaColors {

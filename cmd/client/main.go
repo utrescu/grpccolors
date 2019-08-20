@@ -79,7 +79,7 @@ func main() {
 	}
 
 	// Recuperar el que té Id 1
-	var id int64 = 1
+	var id int64 = 2
 	reqblau := v1.ReadRequest{
 		Api: apiVersion,
 		Id:  id,
