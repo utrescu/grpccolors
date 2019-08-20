@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -80,7 +79,8 @@ func (s *colorServiceServer) locateColor(id int64) (int, error) {
 			return index, nil
 		}
 	}
-	return -1, errors.New("Not found")
+	return -1, status.Errorf(codes.NotFound,
+		"Id no trobat:'%d'", id)
 }
 
 func (s *colorServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (*v1.CreateResponse, error) {
@@ -92,6 +92,11 @@ func (s *colorServiceServer) Create(ctx context.Context, req *v1.CreateRequest) 
 	// Check if rgb already exists
 	if err := s.checkRGB(req.Color.Rgb); err != nil {
 		return nil, err
+	}
+
+	if req.Color == nil || req.Color.Nom == "" || req.Color.Rgb == "" {
+		return nil, status.Errorf(codes.InvalidArgument,
+			"S'han d'especificar les noves dades: color:{nom=%s,rgb=%s}", req.Color.Nom, req.Color.Rgb)
 	}
 
 	creacio := ptypes.TimestampNow()
@@ -125,7 +130,7 @@ func (s *colorServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1
 
 	posicio, err := s.locateColor(req.Id)
 	if err != nil {
-		return nil, errors.New("Color no trobat")
+		return nil, err
 	}
 
 	return &v1.ReadResponse{
@@ -139,6 +144,11 @@ func (s *colorServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) 
 	// check if the API version requested by client is supported by server
 	if err := s.checkAPI(req.Api); err != nil {
 		return nil, err
+	}
+
+	if req.Color == nil || req.Color.Nom == "" || req.Color.Rgb == "" {
+		return nil, status.Errorf(codes.InvalidArgument,
+			"S'han d'especificar les noves dades: color:{nom=%s,rgb=%s}", req.Color.Nom, req.Color.Rgb)
 	}
 
 	var updated int64
