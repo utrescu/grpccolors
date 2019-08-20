@@ -110,11 +110,12 @@ Grpc-Metadata-Content-Type: application/grpc
 }
 ```
 
-He vist que en les versions GET no cal especificar la versió de API, però a l'hora de fer canvis si. No sé si és algun problema amb la meva implementació
+Especificar la versió de 'api' és opcional, perquè sempre crida a la darrera versió que hi ha.
 
-## Executar el client
+## Executar el client gRPC
 
-Per ara el client és una mica rudimentari i només funciona amb gRPC. Només crea el color vermell i el blau, recupera el que tingui Id=2, i recupera tots els colors del servidor ...
+Per ara el client és una mica rudimentari i només funciona amb gRPC. Només crea uns quants colors, recupera el que tingui 
+Id=2, i llista tots els colors que tingui el servidor ...
 
 ```bash
 cd cmd/client
@@ -126,13 +127,25 @@ Ara comprova que els colors no siguin repetits o sigui que només es pot executa
 El resultat serà:
 
 ```text
-PS E:\work-random\programming\golang\grpccolors\cmd\client> .\client.exe -servidor="localhost:9090"
-2019/08/18 18:12:32 Create: <api:"v1" id:1 >
+$ .\client -servidor="localhost:9090"
+2019/08/20 17:22:51 Create: Id=1
 
-2019/08/18 18:12:32 Read: <api:"v1" color:<id:1 nom:"Vermell" rgb:"FF0000" creacio:<seconds:1566144752 nanos:4133600 > > >
+2019/08/20 17:22:51 Create: Id=2
 
-2019/08/18 18:12:32 ReadAll: <api:"v1" >
-2019/08/18 18:15:26 Resultat: <api:"v1" color:<id:1 nom:"Vermell" rgb:"FF0000" creacio:<seconds:1566144926 nanos:560139900 > > >
+2019/08/20 17:22:51 Create: Id=3
+
+2019/08/20 17:22:51 Create: Id=4
+
+2019/08/20 17:22:51 Create: Id=5
+
+2019/08/20 17:22:51 Read: 2, blau, 00FF00
+
+2019/08/20 17:22:51 ----- COLORS ----
+2019/08/20 17:22:51 Color: 1 vermell : FF0000
+2019/08/20 17:22:51 Color: 2 blau : 00FF00
+2019/08/20 17:22:51 Color: 3 verd : 0000FF
+2019/08/20 17:22:51 Color: 4 blanc : FFFFFF
+2019/08/20 17:22:51 Color: 5 negre : 000000
 ```
 
 ## Modificar el servidor

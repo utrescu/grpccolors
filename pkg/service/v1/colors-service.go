@@ -33,6 +33,7 @@ func NewColorServiceServer() v1.ColorServiceServer {
 // NewColorServiceServerWithValues inicialitzat amb valors
 func NewColorServiceServerWithValues(colors []v1.Color) v1.ColorServiceServer {
 	var max int64
+	// Busca quin és el ID més vell
 	for _, c := range colors {
 		if c.Id > max {
 			max = c.Id
