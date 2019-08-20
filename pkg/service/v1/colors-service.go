@@ -112,7 +112,6 @@ func (s *colorServiceServer) Create(ctx context.Context, req *v1.CreateRequest) 
 	}
 
 	s.llistaColors = append(s.llistaColors, color)
-	// get ID of creates ToDo
 
 	return &v1.CreateResponse{
 		Api: apiVersion,
